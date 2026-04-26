@@ -13,8 +13,16 @@ Expectile regression is performed on the state value function with respect to ra
 
 $$\underset{m_{\tau}}{\arg\min} \ \mathbb{E}_{x \sim X} \left[ L_2^{\tau}(x - m_{\tau}) \right]$$
 
-where $L_2^{\tau}(u) = |\tau - \mathbf{1}(u < 0)| \cdot u^2$ This can be easily extended to expectiles of a conditional distribution. The main purpose of using an asymmetric loss is to weight the positive and negative residuals asymmetrically. In the case of IQL, the policy evaluation objective
-can be modified to predict the upper expectile of the TD targets in such a way that the approximated maximum of $r(s, a) + \gamma Q_{\hat{\theta}}(s', a')$ over actions a' constrained to the dataset actions.
+where $L_2^{\tau}(u) = |\tau - \mathbf{1}(u < 0)| \cdot u^2$ This can be easily extended to expectiles of a conditional distribution. The main purpose of using an asymmetric loss is to weight the positive and negative residuals asymmetrically. In the case of IQL, $u = Q(s, a) - V(s)$ and the expectile loss can be interpreted as follows:
+- when Q > V (positive residual), loss is weighed by $\tau$
+- when Q < V (negative residual), loss is weighed by $(1 - \tau)$
+
+If: 
+- $\tau = 0.5$, $V(s)$ is symmetric, learns the mean of $Q(s, a)$ over actions in the dataset.
+- $\tau \to 1.0$, heavily penalizes underestimation, $V(s)$ learns the maximum of $Q(s, a)$.
+- $\tau \to 0.0$, heavily penalizes overestimation, $V(s)$ learns the minimum of $Q(s, a)$.
+
+$V(s)$ approximates the maximum of $Q(s, a)$ over only actions present in the dataset, without having to sample actions or query new actions to compute the max, avoiding the out of sample problem. The policy evaluation objective can be modified to predict the upper expectile of the TD targets in such a way that the approximated maximum of $r(s, a) + \gamma Q_{\hat{\theta}}(s', a')$ over actions a' constrained to the dataset actions.
 
 $$L(\theta) = \mathbb{E}_{(s, a, s', a') \sim \mathcal{D}} \left[ L_2^{\tau} \left( r(s, a) + \gamma Q_{\hat{\theta}}(s', a') - Q_{\theta}(s, a) \right) \right]$$
 
@@ -30,7 +38,7 @@ $$L_Q(\theta) = \mathbb{E}_{(s, a, s') \sim \mathcal{D}} \left[ \left( r(s, a) +
 Note that clipped double Q-learning is used to compute targets. 
 
 ### Advantage-Weighted Regression
-The policy is extracted through advantage-weighted regression
+The policy is extracted through advantage-weighted regression, with $\beta$ controlling how sharply high-advantage actions are weighetd. This allows weighted behaviour cloning where actions are weighted relative to the average. As a consequence, the policy learns to reproduce high-advantage actions, while avoiding low-advantage actions. The actions $a$ come from the dataset, so there is no need to query new actions either.
 
 $$L_{\pi}(\phi) = \mathbb{E}_{(s, a) \sim \mathcal{D}} \left[ \exp\left(\beta \left(Q_{\hat{\theta}}(s, a) - V_{\psi}(s)\right)\right) \log \pi_{\phi}(a \mid s) \right]$$
 

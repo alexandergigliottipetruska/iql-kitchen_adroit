@@ -6,6 +6,11 @@ together into an optimal one.
 Implicit Q-Learning (IQL) aims to fit the upper expectile of the value function and compute the Q-value backup. Afterwards, it extracts the policy via advantage weighted behavioural cloning, without querying out-of-sample actions, aiming
 to determine how the Q-value function can vary with different actions while averaging future outcomes together as a result of stochastic dynamics. 
 
+The two main experiments were **Adroit Pen** and **Franka Kitchen**, with the latter averaging 3 out of 4 tasks during testing, and the former using a checkpoint that averaged over a 50 episode rollout 5830.48.
+
+![Adroit Pen](https://github.com/alexandergigliottipetruska/iql-kitchen_adroit/raw/main/adroit_pen.gif)
+![Franka Kitchen](https://github.com/alexandergigliottipetruska/iql-kitchen_adroit/raw/main/kitchen_sped_up.gif)
+
 ## Algorithm
 
 ### Expectile Regression
